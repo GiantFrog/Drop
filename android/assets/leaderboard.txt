@@ -1,0 +1,1 @@
+[{class:science.skywhale.drop.LeaderboardEntry,name:Papaya Pete,score:108},{class:science.skywhale.drop.LeaderboardEntry,name:Goat,score:34},{class:science.skywhale.drop.LeaderboardEntry,name:Anonymous,score:8}]
