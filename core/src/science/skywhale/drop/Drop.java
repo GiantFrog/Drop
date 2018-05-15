@@ -27,4 +27,7 @@ public class Drop extends Game
 		font.dispose();
 		this.getScreen().dispose();
 	}
+
+	//TODO buttons
+	//TODO settings screen
 }

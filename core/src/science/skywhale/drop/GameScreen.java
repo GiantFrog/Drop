@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -21,15 +20,14 @@ public class GameScreen implements Screen
 {
 	final Drop game;
 	
-	private Texture dropImg, bucketImg;
+	private Texture dropImg, stoneImg, spongeImg, bucketImg;
 	private Sound dropSound1, dropSound2, dropSound3;
 	private Music rainMusic;
 	private OrthographicCamera camera;
 	private Rectangle bucket, water;
-	private Vector3 touchPos;
-	private Array<Rectangle> raindrops;
-	private long lastDropTime;
-	private int dropsGathered;
+	private Array<FallingThing> raindrops;	//stores sponges and stuff, too
+	private long lastDropTime, lastCollisionTime;
+	private int dropsGathered, speedMod;
 	private ShapeRenderer shapeRenderer;
 
 	//set and configure all the objects
@@ -38,11 +36,14 @@ public class GameScreen implements Screen
 		this.game = game;
 		
 		dropImg = new Texture("droplet.png");
+		stoneImg = new Texture("stone.png");
+		spongeImg = new Texture("sponge.png");
 		bucketImg = new Texture(Gdx.files.internal("bucket.png"));
 		rainMusic = Gdx.audio.newMusic(Gdx.files.internal("ChocolateRain.mp3"));
 		dropSound1 = Gdx.audio.newSound(Gdx.files.internal("drop1.wav"));
 		dropSound2 = Gdx.audio.newSound(Gdx.files.internal("drop2.wav"));
 		dropSound3 = Gdx.audio.newSound(Gdx.files.internal("drop3.wav"));
+		speedMod = 0;
 		
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
@@ -62,17 +63,20 @@ public class GameScreen implements Screen
 
 		shapeRenderer = new ShapeRenderer();
 		
-		raindrops = new Array<Rectangle>();
+		raindrops = new Array<FallingThing>();
 		spawnRaindrop();
 	}
 	
 	private void spawnRaindrop()
 	{
-		Rectangle raindrop = new Rectangle();
-		raindrop.x = MathUtils.random(0, 800-64);
-		raindrop.y = 480;
-		raindrop.width = raindrop.height = 64;
-		raindrops.add(raindrop);
+		double randy = Math.random();
+		if (randy >= .95)		//5% chance for a sponge
+			raindrops.add(new FallingThing(3, spongeImg));
+		else if (randy >= .75)	//20% chance for a stone
+			raindrops.add(new FallingThing(2, stoneImg));
+		else					//75% chance for a raindrop
+			raindrops.add(new FallingThing(1, dropImg));
+		//mark the current time, so we can later check to see if it has been long enough to drop another one
 		lastDropTime = TimeUtils.nanoTime();
 	}
 	
@@ -88,61 +92,100 @@ public class GameScreen implements Screen
 		
 		game.batch.begin();
 		game.batch.draw(bucketImg, bucket.x, bucket.y);
-		for (Rectangle raindrop: raindrops)
+		for (FallingThing raindrop: raindrops)
 		{
-			game.batch.draw(dropImg, raindrop.x, raindrop.y);
+			game.batch.draw(raindrop.getImg(), raindrop.getX(), raindrop.getY());
 		}
 		game.font.draw(game.batch, "Drops Gathered: " + dropsGathered, 10, 470);
 		game.batch.end();
 
 		//bucket movement
-		if (Gdx.input.isTouched())
-		{
-			touchPos = new Vector3();
-			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			camera.unproject(touchPos);
-			bucket.x = touchPos.x - 64/2;
-		}
 		if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
 			bucket.x -= 300*Gdx.graphics.getDeltaTime();
 		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
 			bucket.x += 300*Gdx.graphics.getDeltaTime();
+		bucket.x += speedMod*Gdx.graphics.getDeltaTime();
 		
 		if (bucket.x < 0)
 			bucket.x = 0;
 		else if (bucket.x > 800 - 64)
 			bucket.x = 800-64;
-		
-		if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
+
+		//spawn items and reset bucket speed, if it is time.
+		if (TimeUtils.nanoTime() - lastDropTime > 900000000)
 			spawnRaindrop();
+		if (speedMod != 0 && TimeUtils.nanoTime() - lastCollisionTime > 200000000)
+			speedMod = 0;
 		
 		//move drops and remove them if they move off the screen or into the bucket
-		Iterator<Rectangle> it = raindrops.iterator();
+		Iterator<FallingThing> it = raindrops.iterator();
 		while (it.hasNext())
 		{
-			Rectangle raindrop = it.next();
-			raindrop.y -= 200*Gdx.graphics.getDeltaTime();
-			if (raindrop.y + 64 < 0)
+			FallingThing raindrop = it.next();
+			raindrop.fall(Gdx.graphics.getDeltaTime());
+
+			switch (raindrop.getType())
 			{
-				water.height += 10;
-				it.remove();
-			}
-			else if (raindrop.overlaps(bucket))
-			{
-				dropsGathered++;
-				switch ((int)(Math.random()*3))
-				{
-					case 0:
-						dropSound1.play();
-						break;
-					case 1:
-						dropSound2.play();
-						break;
-					case 2:
-						dropSound3.play();
-						break;
-				}
-				it.remove();
+				case 1:		//drop
+					if (raindrop.getY() + 64 < 0)
+					{
+						water.height += 10;
+						it.remove();
+					}
+					else if (raindrop.getRect().overlaps(bucket))
+					{
+						dropsGathered++;
+						switch ((int)(Math.random()*3))
+						{
+							case 0:
+								dropSound1.play();
+								break;
+							case 1:
+								dropSound2.play();
+								break;
+							case 2:
+								dropSound3.play();
+								break;
+						}
+						it.remove();
+					}
+					break;
+
+				case 2:		//stone
+					if (raindrop.getY() + 64 < 0)
+					{
+						//TODO play a sploosh
+						it.remove();
+					}
+					else if (raindrop.getRect().overlaps(bucket))
+					{
+						//TODO play a tink
+						if (raindrop.getX() > bucket.x)
+							speedMod = -600;
+						else
+							speedMod = 600;
+						lastCollisionTime = TimeUtils.nanoTime();
+					}
+					break;
+
+				case 3:		//sponge
+					if (raindrop.getY() + 64 < 0)
+					{
+						if (water.height > 0)
+							water.height -= 10;
+						it.remove();
+					}
+					else if (raindrop.getRect().overlaps(bucket))
+					{
+						if (dropsGathered > 0)
+							dropsGathered--;
+						//TODO play a spongy sound
+						it.remove();
+					}
+					break;
+
+				default:
+					it.remove();
 			}
 		}
 		//draw the water
