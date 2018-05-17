@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -18,8 +17,7 @@ import java.util.Iterator;
 
 public class GameScreen implements Screen
 {
-	final Drop game;
-	
+	private final Drop game;
 	private Texture dropImg, stoneImg, spongeImg, bucketImg;
 	private Sound dropSound1, dropSound2, dropSound3;
 	private Music rainMusic;
@@ -29,6 +27,7 @@ public class GameScreen implements Screen
 	private long lastDropTime, lastCollisionTime;
 	private int dropsGathered, speedMod;
 	private ShapeRenderer shapeRenderer;
+	private boolean left, right;
 
 	//set and configure all the objects
 	public GameScreen (final Drop game)
@@ -81,31 +80,43 @@ public class GameScreen implements Screen
 	}
 	
 	@Override
-	public void render (float delta)
-	{
+	public void render (float delta) {
 		//background
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		camera.update();
 		//SpriteBatch renders based on camera's coordinate system
 		game.batch.setProjectionMatrix(camera.combined);
-		
+
 		game.batch.begin();
 		game.batch.draw(bucketImg, bucket.x, bucket.y);
-		for (FallingThing raindrop: raindrops)
+		for (FallingThing raindrop : raindrops)
 		{
 			game.batch.draw(raindrop.getImg(), raindrop.getX(), raindrop.getY());
 		}
 		game.font.draw(game.batch, "Drops Gathered: " + dropsGathered, 10, 470);
 		game.batch.end();
 
+		left = right = false;
+
+		if (Gdx.input.isTouched())
+		{
+			game.touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(game.touchPos);
+			//16 pixel buffer zone with no movement
+			if (game.touchPos.x < bucket.x + 24)
+				left = true;
+			else if (game.touchPos.x > bucket.x + 40)
+				right = true;
+		}
 		//bucket movement
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
-			bucket.x -= 300*Gdx.graphics.getDeltaTime();
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-			bucket.x += 300*Gdx.graphics.getDeltaTime();
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || left)
+			bucket.x -= 300 * Gdx.graphics.getDeltaTime();
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || right)
+			bucket.x += 300 * Gdx.graphics.getDeltaTime();
 		bucket.x += speedMod*Gdx.graphics.getDeltaTime();
-		
+
+		//not allowed to go out of bounds
 		if (bucket.x < 0)
 			bucket.x = 0;
 		else if (bucket.x > 800 - 64)
@@ -189,6 +200,8 @@ public class GameScreen implements Screen
 			}
 		}
 		//draw the water
+		shapeRenderer.setProjectionMatrix(camera.combined);
+
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		shapeRenderer.setColor(0, 0, 255, 1);
 		shapeRenderer.rect(water.getX(), water.getY(), water.getWidth(), water.getHeight());
