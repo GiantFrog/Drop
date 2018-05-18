@@ -15,8 +15,8 @@ end
 
 loop do		#accept new entries
   client = server.accept	#wait here until somebody connects
-	puts server + ' has connected!'
   new_entry_parts = client.gets.chomp.split
+	puts new_entry_parts[0] + ' has connected!'
 	new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1]
 
 	added = false
