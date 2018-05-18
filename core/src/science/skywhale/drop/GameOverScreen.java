@@ -31,9 +31,6 @@ public class GameOverScreen implements Screen
 		try
 		{
 			server = new Socket("ts.skywhale.science", 9027);
-			Scanner in = new Scanner(new InputStreamReader(server.getInputStream()));
-
-			readableBoard = in.next();
 			addToLeaderboard();
 		}
 		catch (IOException dang)
@@ -105,7 +102,12 @@ public class GameOverScreen implements Screen
 				try
 				{
 					PrintWriter out = new PrintWriter(server.getOutputStream(), true);
-					out.println(name + " " + score);
+					out.println(name + ":" + score);
+					out.close();
+					Scanner in = new Scanner(new InputStreamReader(server.getInputStream()));
+					while (in.hasNext())
+						readableBoard += in.next() + "\n";
+					in.close();
 				}
 				catch (IOException eek)
 				{
@@ -118,7 +120,12 @@ public class GameOverScreen implements Screen
 				try
 				{
 					PrintWriter out = new PrintWriter(server.getOutputStream(), true);
-					out.println("Anonymous " + score);
+					out.println("Anonymous:" + score);
+					out.close();
+					Scanner in = new Scanner(new InputStreamReader(server.getInputStream()));
+					while (in.hasNext())
+						readableBoard += in.next() + "\n";
+					in.close();
 				}
 				catch (IOException eek)
 				{

@@ -2,7 +2,7 @@ require 'socket'
 require './leaderboard_entry.rb'
 
 server = TCPServer.new 9027
-file = File.open('leaderboard.txt', 'r+')
+file = File.open('leaderboard.txt', 'r')
 leaderboard = Array.new
 
 unless file.eof?	#load the leaderboard
@@ -12,10 +12,11 @@ unless file.eof?	#load the leaderboard
 	end
 	puts 'leaderboard loaded!'
 end
+file.close()
 
 loop do		#accept new entries
   client = server.accept	#wait here until somebody connects
-  new_entry_parts = client.gets.chomp.split
+  new_entry_parts = client.gets.chomp.split ':'
 	puts new_entry_parts[0] + ' has connected!'
 	new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1]
 
@@ -31,10 +32,13 @@ loop do		#accept new entries
 		leaderboard << new_entry
 	end
 
+	file = File.open('leaderboard.txt', 'w+')
 	leaderboard.each do |entry|	#save the file
-		file.puts(entry.name + ': ' + entry.score + '\n')
+		file.puts(entry.name + ': ' + entry.score)
 	end
 
-	client.puts file
+	client.puts File.read 'leaderboard.txt'
 	puts 'saved and sent file!'
+	client.close
+	file.close
 end
