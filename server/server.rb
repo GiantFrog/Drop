@@ -21,9 +21,9 @@ loop do		#accept new entries
 	new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1]
 
 	added = false
-	leaderboard.each do |entry|	#add them to the leaderboard
+	leaderboard.each_with_index do |entry, index|	#add them to the leaderboard
 		if new_entry.score > entry.score
-			leaderboard.insert entry.index new_entry
+			leaderboard.insert index, new_entry
 			added = true
 			break
 		end
@@ -38,6 +38,7 @@ loop do		#accept new entries
 	end
 
 	client.puts File.read 'leaderboard.txt'
+	client.gets		#wait for clients to do their thing
 	puts 'saved and sent file!'
 	client.close
 	file.close

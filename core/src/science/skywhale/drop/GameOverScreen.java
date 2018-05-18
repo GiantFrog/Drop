@@ -6,11 +6,11 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class GameOverScreen implements Screen
 {
@@ -103,15 +103,17 @@ public class GameOverScreen implements Screen
 				{
 					PrintWriter out = new PrintWriter(server.getOutputStream(), true);
 					out.println(name + ":" + score);
+					BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
+					while (server.getInputStream().read() >= 0)
+						readableBoard += in.readLine() + "\n";
+					out.print("k");
 					out.close();
-					Scanner in = new Scanner(new InputStreamReader(server.getInputStream()));
-					while (in.hasNext())
-						readableBoard += in.next() + "\n";
 					in.close();
+					server.close();
 				}
 				catch (IOException eek)
 				{
-					readableBoard = "Unable to submit" + name + "'s score to the server.\n" + eek;
+					readableBoard = "Unable to submit " + name + "'s score to the server.\n" + eek;
 				}
 			}
 			@Override
@@ -121,11 +123,13 @@ public class GameOverScreen implements Screen
 				{
 					PrintWriter out = new PrintWriter(server.getOutputStream(), true);
 					out.println("Anonymous:" + score);
+					BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
+					while (server.getInputStream().read() >= 0)
+						readableBoard += in.readLine() + "\n";
+					out.print("k");
 					out.close();
-					Scanner in = new Scanner(new InputStreamReader(server.getInputStream()));
-					while (in.hasNext())
-						readableBoard += in.next() + "\n";
 					in.close();
+					server.close();
 				}
 				catch (IOException eek)
 				{
