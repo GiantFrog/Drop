@@ -1,7 +1,7 @@
 require 'socket'
 require './leaderboard_entry.rb'
 
-server = TCPServer.new 'localhost', 8008
+server = TCPServer.new 9027
 file = File.open('leaderboard.txt', 'r+')
 leaderboard = Array.new
 

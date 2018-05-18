@@ -30,7 +30,7 @@ public class GameOverScreen implements Screen
 
 		try
 		{
-			server = new Socket("localhost", 8008);
+			server = new Socket("ts.skywhale.science", 9027);
 			Scanner in = new Scanner(new InputStreamReader(server.getInputStream()));
 
 			readableBoard = in.next();
