@@ -104,8 +104,9 @@ public class GameOverScreen implements Screen
 					PrintWriter out = new PrintWriter(server.getOutputStream(), true);
 					out.println(name + ":" + score);
 					BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
-					while (server.getInputStream().read() >= 0)
-						readableBoard += in.readLine() + "\n";
+					String input;
+					while (!(input = in.readLine()).equals("&"))	//input not &
+						readableBoard += input + "\n";
 					out.print("k");
 					out.close();
 					in.close();
@@ -124,8 +125,9 @@ public class GameOverScreen implements Screen
 					PrintWriter out = new PrintWriter(server.getOutputStream(), true);
 					out.println("Anonymous:" + score);
 					BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
-					while (server.getInputStream().read() >= 0)
-						readableBoard += in.readLine() + "\n";
+					String input;
+					while (!(input = in.readLine()).equals("&"))	//input not &
+						readableBoard += input + "\n";
 					out.print("k");
 					out.close();
 					in.close();

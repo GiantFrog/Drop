@@ -36,6 +36,7 @@ loop do		#accept new entries
 	leaderboard.each do |entry|	#save the file
 		file.puts(entry.name + ': ' + entry.score)
 	end
+	file.puts '&'
 
 	client.puts File.read 'leaderboard.txt'
 	client.gets		#wait for clients to do their thing
