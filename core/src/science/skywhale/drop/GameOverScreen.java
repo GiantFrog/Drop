@@ -2,6 +2,7 @@ package science.skywhale.drop;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -12,7 +13,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class GameOverScreen implements Screen
+public class GameOverScreen implements Screen, InputProcessor
 {
 	private final Drop game;
 	private int score;
@@ -24,13 +25,14 @@ public class GameOverScreen implements Screen
 	{
 		this.game = game;
 		this.score = score;
+		Gdx.input.setInputProcessor(this);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 		readableBoard = "";
 
 		try
 		{
-			server = new Socket("ts.skywhale.science", 9027);
+			server = new Socket("localhost", 9027);
 			addToLeaderboard();
 		}
 		catch (IOException dang)
@@ -48,16 +50,10 @@ public class GameOverScreen implements Screen
 		game.batch.setProjectionMatrix(camera.combined);
 
 		game.batch.begin();
-		game.font.draw(game.batch, "Your bucket has been submerged. Press Q to try again.", 60, 450);
+		game.font.draw(game.batch, "Your bucket has been submerged. Click to try again.", 60, 450);
 		game.font.draw(game.batch, "You scored " + score + " points!", 60, 435);
 		game.font.draw(game.batch, readableBoard, 60, 400);
 		game.batch.end();
-
-		if (Gdx.input.justTouched() || Gdx.input.isKeyPressed(Input.Keys.Q))
-		{
-			game.setScreen(new GameScreen(game));
-			dispose();
-		}
 	}
 
 	@Override
@@ -105,8 +101,14 @@ public class GameOverScreen implements Screen
 					out.println(name + ":" + score);
 					BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
 					String input;
-					while (!(input = in.readLine()).equals("&"))	//input not &
-						readableBoard += input + "\n";
+					while (true)
+					{
+						input = in.readLine();
+						if (input.equals("&"))		//& signifies end of leaderboard
+							break;
+						else
+							readableBoard += input + "\n";
+					}
 					out.print("k");
 					out.close();
 					in.close();
@@ -126,8 +128,14 @@ public class GameOverScreen implements Screen
 					out.println("Anonymous:" + score);
 					BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
 					String input;
-					while (!(input = in.readLine()).equals("&"))	//input not &
-						readableBoard += input + "\n";
+					while (true)
+					{
+						input = in.readLine();
+						if (input.equals("&"))		//& signifies end of leaderboard
+							break;
+						else
+							readableBoard += input + "\n";
+					}
 					out.print("k");
 					out.close();
 					in.close();
@@ -139,5 +147,55 @@ public class GameOverScreen implements Screen
 				}
 			}
 		}, "You did well!!!", "", "Add your name to the leaderboard!");
+	}
+
+	@Override
+	public boolean keyDown (int keycode)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean keyUp (int keycode)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped (char character)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean touchDown (int screenX, int screenY, int pointer, int button)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean touchUp (int screenX, int screenY, int pointer, int button)
+	{
+		game.setScreen(new GameScreen(game));
+		dispose();
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged (int screenX, int screenY, int pointer)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved (int screenX, int screenY)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean scrolled (int amount)
+	{
+		return false;
 	}
 }

@@ -2,6 +2,7 @@ package science.skywhale.drop;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -33,6 +34,7 @@ public class GameScreen implements Screen
 	public GameScreen (final Drop game)
 	{
 		this.game = game;
+		Gdx.input.setInputProcessor(null);
 		
 		dropImg = new Texture("droplet.png");
 		stoneImg = new Texture("stone.png");

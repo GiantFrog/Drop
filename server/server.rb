@@ -20,27 +20,33 @@ loop do		#accept new entries
 	puts new_entry_parts[0] + ' has connected!'
 	new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1]
 
-	added = false
-	leaderboard.each_with_index do |entry, index|	#add them to the leaderboard
+	added = false		#add them to the leaderboard
+	leaderboard.each_with_index do |entry, index|
 		if new_entry.score > entry.score
 			leaderboard.insert index, new_entry
 			added = true
 			break
 		end
 	end
-	unless added
+	unless added		#put it at the end
 		leaderboard << new_entry
 	end
 
+	#save the file
 	file = File.open('leaderboard.txt', 'w+')
-	leaderboard.each do |entry|	#save the file
+	leaderboard.each do |entry|
 		file.puts(entry.name + ': ' + entry.score)
 	end
 	file.puts '&'
+	file.close
 
-	client.puts File.read 'leaderboard.txt'
-	client.gets		#wait for clients to do their thing
+	#give the client the file
+	boardString = IO.read('leaderboard.txt')
+	boardString.each_line do |line|
+		client.puts line
+	end
+
+	client.gets		#wait for client to do their thing
 	puts 'saved and sent file!'
 	client.close
-	file.close
 end
