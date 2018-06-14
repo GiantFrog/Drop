@@ -7,8 +7,10 @@ leaderboard = Array.new
 
 unless file.eof?	#load the leaderboard
 	file.each_line do |line|
-		parts = line.chomp.split ': '
-		leaderboard << (LeaderboardEntry.new parts[0], parts[1])
+		unless line.chomp == '&'
+			parts = line.chomp.split ': '
+			leaderboard << (LeaderboardEntry.new parts[0], parts[1].to_i)
+		end
 	end
 	puts 'leaderboard loaded!'
 end
@@ -18,7 +20,7 @@ loop do		#accept new entries
   client = server.accept	#wait here until somebody connects
   new_entry_parts = client.gets.chomp.split ':'
 	puts new_entry_parts[0] + ' has connected!'
-	new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1]
+	new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1].to_i
 
 	added = false		#add them to the leaderboard
 	leaderboard.each_with_index do |entry, index|
@@ -35,14 +37,14 @@ loop do		#accept new entries
 	#save the file
 	file = File.open('leaderboard.txt', 'w+')
 	leaderboard.each do |entry|
-		file.puts(entry.name + ': ' + entry.score)
+		file.puts(entry.name + ': ' + entry.score.to_s)
 	end
 	file.puts '&'
 	file.close
 
 	#give the client the file
-	boardString = IO.read('leaderboard.txt')
-	boardString.each_line do |line|
+	board_string = IO.read('leaderboard.txt')
+	board_string.each_line do |line|
 		client.puts line
 	end
 

@@ -32,7 +32,7 @@ public class GameOverScreen implements Screen, InputProcessor
 
 		try
 		{
-			server = new Socket("localhost", 9027);
+			server = new Socket("ts.skywhale.science", 9027);
 			addToLeaderboard();
 		}
 		catch (IOException dang)
