@@ -39,7 +39,7 @@ loop do		#accept new entries
 	leaderboard.each do |entry|
 		file.puts(entry.name + ': ' + entry.score.to_s)
 	end
-	file.put '&'
+	file.print '&'
 	file.close
 
 	#give the client the file
