@@ -1,11 +1,9 @@
 # Drop
-My version of the LibGDX wiki's drop game tutorial, which can be found at https://github.com/libgdx/libgdx/wiki/A-simple-game.
-
-NOTE: The android version is currently bugged and will crash when trying to connect to the leaderboard!
+My version of the LibGDX wiki's drop game tutorial, which can be found at https://github.com/libgdx/libgdx/wiki/A-simple-game. Now featuring online leaderboard functionality!
 
 ## How to Run
 ### Windows
-Download Drop.exe and run! You need a Java runtime installed to play. The leaderboard is now shared online!
+Download Drop.exe and run! You need a Java runtime installed to play.
 ### Android
 Download 'android-release.apk' to your phone. Open it from your phone using a file explorer and run to install. When done, you can delete the apk file and just launch the app like any other.
 ### All Platforms
