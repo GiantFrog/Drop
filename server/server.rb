@@ -34,6 +34,9 @@ loop do		#accept new entries
 		unless added		#put it at the end
 			leaderboard << new_entry
 		end
+		if leaderboard.size > 22
+			leaderboard.pop
+		end
 
 		#save the file
 		file = File.open('leaderboard.txt', 'w+')
@@ -50,11 +53,11 @@ loop do		#accept new entries
 		end
 
 		client.gets		#wait for client to do their thing
-		puts 'saved and sent file!'
 		client.close
 
 	rescue
 		#try to close the connection if things go south, then start anew
+		puts 'something broke, rescuing...'
 		begin
 			client.close
 		rescue
