@@ -170,14 +170,14 @@ public class GameOverScreen implements Screen, InputProcessor
 	@Override
 	public boolean touchDown (int screenX, int screenY, int pointer, int button)
 	{
+		game.setScreen(new GameScreen(game));
+		dispose();
 		return false;
 	}
 
 	@Override
 	public boolean touchUp (int screenX, int screenY, int pointer, int button)
 	{
-		game.setScreen(new GameScreen(game));
-		dispose();
 		return false;
 	}
 
