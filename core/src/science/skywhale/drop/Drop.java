@@ -31,9 +31,7 @@ public class Drop extends Game
 		this.getScreen().dispose();
 	}
 
-	//TODO buttons
 	//TODO animations
 	//TODO sprite packer
-	//TODO online leaderboard
 	//TODO settings screen
 }

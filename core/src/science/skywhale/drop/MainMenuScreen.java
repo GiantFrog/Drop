@@ -6,18 +6,65 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class MainMenuScreen implements Screen, InputProcessor
+public class MainMenuScreen implements Screen
 {
 	private final Drop game;
 	private OrthographicCamera camera;
+	private Table table;
+	private TextButton startButton, leaderboardButton;
+	private Skin skin;
+	private Label areYouReady;
+	private Stage stage;
 	
 	public MainMenuScreen (final Drop game)
 	{
 		this.game = game;
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
-		Gdx.input.setInputProcessor(this);
+		skin = new Skin(Gdx.files.internal("skin/skin.json"));
+		stage = new Stage();
+		Gdx.input.setInputProcessor(stage);
+
+		table = new Table();
+		table.setFillParent(true);
+		//table.setDebug(true);
+		areYouReady = new Label("Welcome to Drop!!\n\nAre you ready to begin your journey?", skin);
+		startButton = new TextButton("I am!!", skin);
+		leaderboardButton = new TextButton("No...", skin);
+
+		startButton.addListener(new ClickListener()
+		{
+			@Override
+			public void clicked (InputEvent event, float x, float y)
+			{
+				game.setScreen(new GameScreen(game));
+				dispose();
+			}
+		});
+		leaderboardButton.addListener(new ClickListener()
+		{
+			@Override
+			public void clicked (InputEvent event, float x, float y)
+			{
+				game.setScreen((new GameOverScreen(game)));
+				dispose();
+			}
+		});
+
+		table.add(areYouReady).colspan(2);
+		table.row();
+		table.add(startButton).width(50).height(35).space(70);
+		table.add(leaderboardButton).width(50).height(35).space(70);
+
+		stage.addActor(table);
 	}
 	
 	@Override
@@ -29,8 +76,7 @@ public class MainMenuScreen implements Screen, InputProcessor
 		game.batch.setProjectionMatrix(camera.combined);
 		
 		game.batch.begin();
-		game.font.draw(game.batch, "Welcome to Drop!!", 100, 150);
-		game.font.draw(game.batch, "Are you ready to begin your journey?", 100, 100);
+		stage.draw();
 		game.batch.end();
 	}
 	
@@ -64,55 +110,5 @@ public class MainMenuScreen implements Screen, InputProcessor
 	public void dispose()
 	{
 	
-	}
-
-	@Override
-	public boolean keyDown (int keycode)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean keyUp (int keycode)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped (char character)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean touchDown (int screenX, int screenY, int pointer, int button)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean touchUp (int screenX, int screenY, int pointer, int button)
-	{
-		game.setScreen(new GameScreen(game));
-		dispose();
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged (int screenX, int screenY, int pointer)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved (int screenX, int screenY)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean scrolled (int amount)
-	{
-		return false;
 	}
 }

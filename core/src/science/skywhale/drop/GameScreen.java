@@ -2,7 +2,6 @@ package science.skywhale.drop;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -20,7 +19,7 @@ public class GameScreen implements Screen
 {
 	private final Drop game;
 	private Texture dropImg, stoneImg, spongeImg, bucketImg;
-	private Sound dropSound1, dropSound2, dropSound3;
+	private Sound[] dropSound, splashSound, tinkSound;
 	private Music rainMusic;
 	private OrthographicCamera camera;
 	private Rectangle bucket, water;
@@ -35,15 +34,24 @@ public class GameScreen implements Screen
 	{
 		this.game = game;
 		Gdx.input.setInputProcessor(null);
+		dropSound = new Sound[3];
+		splashSound = new Sound[3];
+		tinkSound = new Sound[3];
 		
 		dropImg = new Texture("droplet.png");
 		stoneImg = new Texture("stone.png");
 		spongeImg = new Texture("sponge.png");
 		bucketImg = new Texture(Gdx.files.internal("bucket.png"));
 		rainMusic = Gdx.audio.newMusic(Gdx.files.internal("ChocolateRain.mp3"));
-		dropSound1 = Gdx.audio.newSound(Gdx.files.internal("drop1.wav"));
-		dropSound2 = Gdx.audio.newSound(Gdx.files.internal("drop2.wav"));
-		dropSound3 = Gdx.audio.newSound(Gdx.files.internal("drop3.wav"));
+		dropSound[0] = Gdx.audio.newSound(Gdx.files.internal("drop1.wav"));
+		dropSound[1] = Gdx.audio.newSound(Gdx.files.internal("drop2.wav"));
+		dropSound[2] = Gdx.audio.newSound(Gdx.files.internal("drop3.mp3"));
+		splashSound[0] = Gdx.audio.newSound(Gdx.files.internal("splash1.mp3"));
+		splashSound[1] = Gdx.audio.newSound(Gdx.files.internal("splash2.mp3"));
+		splashSound[2] = Gdx.audio.newSound(Gdx.files.internal("splash3.mp3"));
+		tinkSound[0] = Gdx.audio.newSound(Gdx.files.internal("tink1.mp3"));
+		tinkSound[1] = Gdx.audio.newSound(Gdx.files.internal("tink2.mp3"));
+		tinkSound[2] = Gdx.audio.newSound(Gdx.files.internal("tink3.mp3"));
 		speedMod = 0;
 		
 		camera = new OrthographicCamera();
@@ -148,18 +156,7 @@ public class GameScreen implements Screen
 					else if (raindrop.getRect().overlaps(bucket))
 					{
 						dropsGathered++;
-						switch ((int)(Math.random()*3))
-						{
-							case 0:
-								dropSound1.play();
-								break;
-							case 1:
-								dropSound2.play();
-								break;
-							case 2:
-								dropSound3.play();
-								break;
-						}
+						dropSound[(int)(Math.random()*3)].play();
 						it.remove();
 					}
 					break;
@@ -167,12 +164,12 @@ public class GameScreen implements Screen
 				case 2:		//stone
 					if (raindrop.getY() + 64 < 0)
 					{
-						//TODO play a sploosh
+						splashSound[(int)(Math.random()*3)].play();
 						it.remove();
 					}
 					else if (raindrop.getRect().overlaps(bucket))
 					{
-						//TODO play a tink
+						tinkSound[(int)(Math.random()*3)].play();
 						if (raindrop.getX() > bucket.x)
 							speedMod = -600;
 						else
@@ -192,7 +189,7 @@ public class GameScreen implements Screen
 					{
 						if (dropsGathered > 0)
 							dropsGathered--;
-						//TODO play a spongy sound
+						//play a spongy sound?
 						it.remove();
 					}
 					break;
@@ -247,9 +244,15 @@ public class GameScreen implements Screen
 	{
 		dropImg.dispose();
 		bucketImg.dispose();
-		dropSound1.dispose();
-		dropSound2.dispose();
-		dropSound3.dispose();
+		dropSound[0].dispose();
+		dropSound[1].dispose();
+		dropSound[2].dispose();
+		splashSound[0].dispose();
+		splashSound[1].dispose();
+		splashSound[2].dispose();
+		tinkSound[0].dispose();
+		tinkSound[1].dispose();
+		tinkSound[2].dispose();
 		rainMusic.dispose();
 		shapeRenderer.dispose();
 	}
