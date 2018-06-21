@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class MainMenuScreen implements Screen
 {
@@ -30,7 +31,7 @@ public class MainMenuScreen implements Screen
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 		skin = new Skin(Gdx.files.internal("skin/skin.json"));
-		stage = new Stage();
+		stage = new Stage(new FitViewport(800, 480));
 		Gdx.input.setInputProcessor(stage);
 
 		table = new Table();
@@ -83,7 +84,7 @@ public class MainMenuScreen implements Screen
 	@Override
 	public void resize (int width, int height)
 	{
-	
+		stage.getViewport().update(width, height, true);
 	}
 	@Override
 	public void show()
