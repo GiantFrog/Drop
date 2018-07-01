@@ -169,7 +169,8 @@ public class GameScreen implements Screen
 					}
 					else if (raindrop.getRect().overlaps(bucket))
 					{
-						tinkSound[(int)(Math.random()*3)].play();
+						if (TimeUtils.nanoTime() > lastCollisionTime + 100000000)
+							tinkSound[(int)(Math.random()*3)].play();	//only play a sound if 1/10th sec has passed
 						if (raindrop.getX() > bucket.x)
 							speedMod = -600;
 						else
