@@ -25,7 +25,7 @@ public class GameScreen implements Screen
 	private Rectangle bucket, water;
 	private Array<FallingThing> raindrops;	//stores sponges and stuff, too
 	private long lastDropTime, lastCollisionTime;
-	private int dropsGathered, speedMod;
+	private int dropsGathered, speed, speedMod;
 	private ShapeRenderer shapeRenderer;
 	private boolean left, right;
 
@@ -52,7 +52,7 @@ public class GameScreen implements Screen
 		tinkSound[0] = Gdx.audio.newSound(Gdx.files.internal("tink1.mp3"));
 		tinkSound[1] = Gdx.audio.newSound(Gdx.files.internal("tink2.mp3"));
 		tinkSound[2] = Gdx.audio.newSound(Gdx.files.internal("tink3.mp3"));
-		speedMod = 0;
+		speed = speedMod = 0;
 		
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
@@ -109,30 +109,35 @@ public class GameScreen implements Screen
 
 		left = right = false;
 
-		if (Gdx.input.isTouched())
+		//touch movement
+		if (Gdx.input.isTouched(1))
 		{
-			game.touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			game.touchPos.set(Gdx.input.getX(0), Gdx.input.getY(0), 0);
 			camera.unproject(game.touchPos);
 			//16 pixel buffer zone with no movement
 			if (game.touchPos.x < bucket.x + 24)
-				left = true;
+				speed = -300;
 			else if (game.touchPos.x > bucket.x + 40)
-				right = true;
+				speed = 300;
+			else
+				speed = 0;
 		}
-		//bucket movement
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || left)
-			bucket.x -= 300 * Gdx.graphics.getDeltaTime();
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || right)
-			bucket.x += 300 * Gdx.graphics.getDeltaTime();
-		bucket.x += speedMod*Gdx.graphics.getDeltaTime();
+		else if (Gdx.input.isTouched(0))
+		{
+			game.touchPos.set(Gdx.input.getX(0), Gdx.input.getY(0), 0);
+			camera.unproject(game.touchPos);
+			//16 pixel buffer zone with no movement
+			if (game.touchPos.x < bucket.x + 24)
+				speed = -300;
+			else if (game.touchPos.x > bucket.x + 40)
+				speed = 300;
+			else
+				speed = 0;
+		}
+		else
+			speed = 0;
 
-		//not allowed to go out of bounds
-		if (bucket.x < 0)
-			bucket.x = 0;
-		else if (bucket.x > 800 - 64)
-			bucket.x = 800-64;
-
-		//spawn items and reset bucket speed, if it is time.
+		//spawn items and reset bucket speed mod, if it is time.
 		if (TimeUtils.nanoTime() - lastDropTime > 900000000)
 			spawnRaindrop();
 		if (speedMod != 0 && TimeUtils.nanoTime() - lastCollisionTime > 200000000)
@@ -199,6 +204,21 @@ public class GameScreen implements Screen
 					it.remove();
 			}
 		}
+		
+		//bucket movement
+		//speed is reset to 0 in the touch movement above
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
+			speed = -300;
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+			speed = 300;
+		bucket.x += (speed + speedMod)*Gdx.graphics.getDeltaTime();
+		
+		//not allowed to go out of bounds
+		if (bucket.x < 0)
+			bucket.x = 0;
+		else if (bucket.x > 800 - 64)
+			bucket.x = 800-64;
+		
 		//draw the water
 		shapeRenderer.setProjectionMatrix(camera.combined);
 
