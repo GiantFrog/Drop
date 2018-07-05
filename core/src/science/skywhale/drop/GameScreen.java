@@ -27,7 +27,8 @@ public class GameScreen implements Screen
 	private long lastDropTime, lastCollisionTime;
 	private int dropsGathered, speed, speedMod;
 	private ShapeRenderer shapeRenderer;
-
+	private boolean touched;
+	
 	//set and configure all the objects
 	public GameScreen (final Drop game)
 	{
@@ -89,7 +90,8 @@ public class GameScreen implements Screen
 	}
 	
 	@Override
-	public void render (float delta) {
+	public void render (float delta)
+	{
 		//background
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -111,17 +113,21 @@ public class GameScreen implements Screen
 		{
 			game.touchPos.set(Gdx.input.getX(1), Gdx.input.getY(1), 0);
 			camera.unproject(game.touchPos);
+			touched = true;
 		}
 		else if (Gdx.input.isTouched(0))
 		{
 			game.touchPos.set(Gdx.input.getX(0), Gdx.input.getY(0), 0);
 			camera.unproject(game.touchPos);
+			touched = true;
 		}
 		else
-			speed = 0;
+			touched = false;
 		
 		//16 pixel buffer zone with no movement
-		if (game.touchPos.x < bucket.x + 24)
+		if (!touched)
+			speed = 0;
+		else if (game.touchPos.x < bucket.x + 24)
 			speed = -300;
 		else if (game.touchPos.x > bucket.x + 40)
 			speed = 300;
