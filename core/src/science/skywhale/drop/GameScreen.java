@@ -27,7 +27,6 @@ public class GameScreen implements Screen
 	private long lastDropTime, lastCollisionTime;
 	private int dropsGathered, speed, speedMod;
 	private ShapeRenderer shapeRenderer;
-	private boolean left, right;
 
 	//set and configure all the objects
 	public GameScreen (final Drop game)
@@ -107,36 +106,28 @@ public class GameScreen implements Screen
 		game.font.draw(game.batch, "Drops Gathered: " + dropsGathered, 10, 470);
 		game.batch.end();
 
-		left = right = false;
-
 		//touch movement
 		if (Gdx.input.isTouched(1))
 		{
-			game.touchPos.set(Gdx.input.getX(0), Gdx.input.getY(0), 0);
+			game.touchPos.set(Gdx.input.getX(1), Gdx.input.getY(1), 0);
 			camera.unproject(game.touchPos);
-			//16 pixel buffer zone with no movement
-			if (game.touchPos.x < bucket.x + 24)
-				speed = -300;
-			else if (game.touchPos.x > bucket.x + 40)
-				speed = 300;
-			else
-				speed = 0;
 		}
 		else if (Gdx.input.isTouched(0))
 		{
 			game.touchPos.set(Gdx.input.getX(0), Gdx.input.getY(0), 0);
 			camera.unproject(game.touchPos);
-			//16 pixel buffer zone with no movement
-			if (game.touchPos.x < bucket.x + 24)
-				speed = -300;
-			else if (game.touchPos.x > bucket.x + 40)
-				speed = 300;
-			else
-				speed = 0;
 		}
 		else
 			speed = 0;
-
+		
+		//16 pixel buffer zone with no movement
+		if (game.touchPos.x < bucket.x + 24)
+			speed = -300;
+		else if (game.touchPos.x > bucket.x + 40)
+			speed = 300;
+		else
+			speed = 0;
+		
 		//spawn items and reset bucket speed mod, if it is time.
 		if (TimeUtils.nanoTime() - lastDropTime > 900000000)
 			spawnRaindrop();
@@ -169,7 +160,8 @@ public class GameScreen implements Screen
 				case 2:		//stone
 					if (raindrop.getY() + 64 < 0)
 					{
-						splashSound[(int)(Math.random()*3)].play();
+						if (water.height > 0)
+							splashSound[(int)(Math.random()*3)].play();
 						it.remove();
 					}
 					else if (raindrop.getRect().overlaps(bucket))
