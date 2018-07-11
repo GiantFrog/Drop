@@ -20,7 +20,7 @@ loop do		#accept new entries
 	begin
 		client = server.accept	#wait here until somebody connects
 		new_entry_parts = client.gets.chomp.split ':'
-		
+
 		#mm/dd/yyyy hr:mn- Umiko has connected!
 		puts new_entry_parts[0] + ' has connected!'
 		new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1].to_i
@@ -54,7 +54,7 @@ loop do		#accept new entries
 			client.puts line
 		end
 
-		client.gets		#wait for client to do their thing
+		#client.gets		#wait for client to do their thing
 		client.close
 	rescue
 		#try to close the connection if things go south, then start anew

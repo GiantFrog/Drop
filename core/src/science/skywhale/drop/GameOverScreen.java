@@ -161,7 +161,7 @@ public class GameOverScreen implements Screen, InputProcessor
 						rightColString += input + "\n";
 				}
 			}
-			out.print("k");
+			//out.print("k");
 			out.close();
 			in.close();
 			server.close();
