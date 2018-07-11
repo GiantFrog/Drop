@@ -20,9 +20,9 @@ loop do		#accept new entries
 	begin
 		client = server.accept	#wait here until somebody connects
 		new_entry_parts = client.gets.chomp.split ':'
-		time = Time.now
+		
 		#mm/dd/yyyy hr:mn- Umiko has connected!
-		puts time.month+'/'+time.day+'/'+ time.year + ' ' + time.hour+':'+time.min + '- ' + new_entry_parts[0] + ' has connected!'
+		puts new_entry_parts[0] + ' has connected!'
 		new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1].to_i
 
 		added = false		#add them to the leaderboard
