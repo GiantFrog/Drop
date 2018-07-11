@@ -53,8 +53,9 @@ loop do		#accept new entries
 		board_string.each_line do |line|
 			client.puts line
 		end
-		client.close
 
+		client.gets		#wait for client to do their thing
+		client.close
 	rescue
 		#try to close the connection if things go south, then start anew
 		puts 'something broke, rescuing...'
