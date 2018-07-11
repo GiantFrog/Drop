@@ -55,6 +55,7 @@ public class GameOverScreen implements Screen, InputProcessor
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 		leftColString = "";
+		rightColString = "";
 		toDraw = "Here is the current leaderboard. Look to it for inspiration.";
 
 		try
