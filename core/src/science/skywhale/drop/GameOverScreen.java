@@ -19,11 +19,11 @@ public class GameOverScreen implements Screen, InputProcessor
 	private int score;
 	private String name, toDraw;
 	private OrthographicCamera camera;
-	private String readableBoard;
+	private String leftColString, rightColString;
 	private Socket server;
 	private boolean secondTouch;	//so the leaderboard doesn't disappear immediately
 
-	public GameOverScreen (final Drop game, int score)
+	public GameOverScreen (final Drop game, int score)		//Game has just finished
 	{
 		secondTouch = false;
 		this.game = game;
@@ -31,38 +31,42 @@ public class GameOverScreen implements Screen, InputProcessor
 		Gdx.input.setInputProcessor(this);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
-		readableBoard = "";
+		leftColString = "";
+		rightColString = "";
 		toDraw = "Your bucket has been submerged. Click to try again.";
 
 		try
 		{
-			server = new Socket("ts.skywhale.science", 9027);
+			server = new Socket("drop.skywhale.science", 9027);
 			requestName(); //will call addToLeaderboard()
 		}
 		catch (IOException dang)
 		{
-			readableBoard = "Unable to connect to the online leaderboard.\n" + dang;
+			leftColString = "Unable to connect to the online leaderboard.\n" + dang;
+			rightColString = ":(";
 		}
 	}
-	public GameOverScreen (final Drop game)
+	public GameOverScreen (final Drop game)		//from the main menu, not the game
 	{
+		secondTouch = true;	//fixes a bug if you get here from the GameScreen, not the Main Menu, so starts true here
 		this.game = game;
 		score = -1;
 		Gdx.input.setInputProcessor(this);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
-		readableBoard = "";
+		leftColString = "";
 		toDraw = "Here is the current leaderboard. Look to it for inspiration.";
 
 		try
 		{
-			server = new Socket("ts.skywhale.science", 9027);
+			server = new Socket("drop.skywhale.science", 9027);
 			name = "Umiko";
 			addToLeaderboard();
 		}
 		catch (IOException dang)
 		{
-			readableBoard = "Unable to connect to the online leaderboard.\n" + dang;
+			leftColString = "Unable to connect to the online leaderboard.\n" + dang;
+			rightColString = ":(";
 		}
 	}
 
@@ -77,7 +81,8 @@ public class GameOverScreen implements Screen, InputProcessor
 		game.batch.begin();
 		game.font.draw(game.batch, toDraw, 60, 450);
 		game.font.draw(game.batch, "You scored " + score + " points!", 60, 435);
-		game.font.draw(game.batch, readableBoard, 60, 400);
+		game.font.draw(game.batch, leftColString, 60, 400);
+		game.font.draw(game.batch, rightColString, 430, 400);
 		game.batch.end();
 	}
 
@@ -139,22 +144,30 @@ public class GameOverScreen implements Screen, InputProcessor
 			out.println(name + ":" + score);
 			BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
 			String input;
+			int added = 0;
 			while (true)
 			{
 				input = in.readLine();
 				if (input.equals("&"))		//& signifies end of leaderboard
 					break;
 				else
-					readableBoard += input + "\n";
+				{
+					if (added < 22)
+					{
+						leftColString += input + "\n";
+						added++;
+					}
+					else
+						rightColString += input + "\n";
+				}
 			}
-			out.print("k");
 			out.close();
 			in.close();
 			server.close();
 		}
 		catch (IOException eek)
 		{
-			readableBoard = "Unable to submit " + name + "'s score to the server.\n" + eek;
+			leftColString = "Unable to submit " + name + "'s score to the server.\n" + eek;
 		}
 	}
 

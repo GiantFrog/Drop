@@ -20,7 +20,9 @@ loop do		#accept new entries
 	begin
 		client = server.accept	#wait here until somebody connects
 		new_entry_parts = client.gets.chomp.split ':'
-		puts new_entry_parts[0] + ' has connected!'
+		time = Time.now
+		#mm/dd/yyyy hr:mn- Umiko has connected!
+		puts time.month+'/'+time.day+'/'+ time.year + ' ' + time.hour+':'+time.min + '- ' + new_entry_parts[0] + ' has connected!'
 		new_entry = LeaderboardEntry.new new_entry_parts[0], new_entry_parts[1].to_i
 
 		added = false		#add them to the leaderboard
@@ -34,7 +36,7 @@ loop do		#accept new entries
 		unless added		#put it at the end
 			leaderboard << new_entry
 		end
-		if leaderboard.size > 22
+		if leaderboard.size > 44	#axe the lowest score if it won't fit on the client's screen
 			leaderboard.pop
 		end
 
@@ -43,7 +45,7 @@ loop do		#accept new entries
 		leaderboard.each do |entry|
 			file.puts(entry.name + ': ' + entry.score.to_s)
 		end
-		file.print '&'
+		file.print '&'	#tell the client we have reached the end of the leaderboard
 		file.close
 
 		#give the client the file
@@ -51,8 +53,6 @@ loop do		#accept new entries
 		board_string.each_line do |line|
 			client.puts line
 		end
-
-		client.gets		#wait for client to do their thing
 		client.close
 
 	rescue
