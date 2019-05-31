@@ -21,11 +21,9 @@ public class GameOverScreen implements Screen, InputProcessor
 	private OrthographicCamera camera;
 	private String leftColString, rightColString;
 	private Socket server;
-	private boolean secondTouch;	//so the leaderboard doesn't disappear immediately
 
 	public GameOverScreen (final Drop game, int score)		//Game has just finished
 	{
-		secondTouch = false;
 		this.game = game;
 		this.score = score;
 		Gdx.input.setInputProcessor(this);
@@ -48,7 +46,6 @@ public class GameOverScreen implements Screen, InputProcessor
 	}
 	public GameOverScreen (final Drop game)		//from the main menu, not the game
 	{
-		secondTouch = true;	//fixes a bug if you get here from the GameScreen, not the Main Menu, so starts true here
 		this.game = game;
 		score = -1;
 		Gdx.input.setInputProcessor(this);
@@ -194,19 +191,14 @@ public class GameOverScreen implements Screen, InputProcessor
 	@Override
 	public boolean touchDown (int screenX, int screenY, int pointer, int button)
 	{
+		game.setScreen(new MainMenuScreen(game));
+		dispose();
 		return false;
 	}
 
 	@Override
 	public boolean touchUp (int screenX, int screenY, int pointer, int button)
 	{
-		if (secondTouch)
-		{
-			game.setScreen(new MainMenuScreen(game));
-			dispose();
-		}
-		else
-			secondTouch = true;
 		return false;
 	}
 

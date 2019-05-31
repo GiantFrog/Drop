@@ -9,13 +9,16 @@ public class Drop extends Game
 {
 	public SpriteBatch batch;
 	public BitmapFont font;
-	public Vector3 touchPos;
+	//public Vector3 touchPos;
+	public int width, height;
 	
 	public void create()
 	{
 		batch = new SpriteBatch();
 		font = new BitmapFont();	//defaults to Arial
-		touchPos = new Vector3();
+		//touchPos = new Vector3();
+		width = 800;
+		height = 480;
 		this.setScreen(new MainMenuScreen(this));
 	}
 	
