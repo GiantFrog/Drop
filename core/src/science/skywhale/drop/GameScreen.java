@@ -81,8 +81,7 @@ public class GameScreen implements Screen, InputProcessor
 		tinkSound[2] = Gdx.audio.newSound(Gdx.files.internal("sfx/tink3.mp3"));
 		speed = speedMod = 0;
 		
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 480);
+		camera = game.camera;
 		
 		bucket = new Rectangle();
 		bucket.x = 800/2 - 64/2;
@@ -214,7 +213,6 @@ public class GameScreen implements Screen, InputProcessor
 		}
 		
 		//bucket movement
-		//speed is reset to 0 in the touch movement above
 		bucket.x += (speed + speedMod)*Gdx.graphics.getDeltaTime();
 		
 		//not allowed to go out of bounds
@@ -226,7 +224,7 @@ public class GameScreen implements Screen, InputProcessor
 		//draw the water
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(0, 0, 255, 1);
+		shapeRenderer.setColor(0, 0, 0.5f, 1);
 		shapeRenderer.rect(water.getX(), water.getY(), water.getWidth(), water.getHeight());
 		shapeRenderer.end();
 
@@ -240,7 +238,7 @@ public class GameScreen implements Screen, InputProcessor
 	@Override
 	public void resize (int width, int height)
 	{
-	
+		game.viewport.update(width, height);
 	}
 	@Override
 	public void show()
@@ -335,7 +333,7 @@ public class GameScreen implements Screen, InputProcessor
 	{
 		currentFinger = pointer;
 		touchPos.set(screenX, screenY, 0);
-		camera.unproject(touchPos);
+		game.viewport.unproject(touchPos);
 		return true;
 	}
 	
@@ -349,13 +347,13 @@ public class GameScreen implements Screen, InputProcessor
 			{
 				currentFinger = 0;
 				touchPos.set(Gdx.input.getX(0), Gdx.input.getY(0), 0);
-				camera.unproject(touchPos);
+				game.viewport.unproject(touchPos);
 			}
 			else if (Gdx.input.isTouched(1))
 			{
 				currentFinger = 1;
 				touchPos.set(Gdx.input.getX(1), Gdx.input.getY(1), 0);
-				camera.unproject(touchPos);
+				game.viewport.unproject(touchPos);
 			}
 			else
 			{
@@ -373,7 +371,7 @@ public class GameScreen implements Screen, InputProcessor
 		if (currentFinger == pointer)
 		{
 			touchPos.set(screenX, screenY, 0);
-			camera.unproject(touchPos);
+			game.viewport.unproject(touchPos);
 		}
 		return false;
 	}

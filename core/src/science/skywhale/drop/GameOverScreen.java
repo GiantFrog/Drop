@@ -27,8 +27,7 @@ public class GameOverScreen implements Screen, InputProcessor
 		this.game = game;
 		this.score = score;
 		Gdx.input.setInputProcessor(this);
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 480);
+		camera = game.camera;
 		leftColString = "";
 		rightColString = "";
 		toDraw = "Your bucket has been submerged. Click to try again.";
@@ -87,7 +86,7 @@ public class GameOverScreen implements Screen, InputProcessor
 	@Override
 	public void resize (int width, int height)
 	{
-
+		game.viewport.update(width, height);
 	}
 	@Override
 	public void show()

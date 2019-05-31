@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class MainMenuScreen implements Screen
 {
@@ -26,15 +25,14 @@ public class MainMenuScreen implements Screen
 	public MainMenuScreen (final Drop game)
 	{
 		this.game = game;
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 480);
+		camera = game.camera;
 		skin = new Skin(Gdx.files.internal("skin/skin.json"));
-		stage = new Stage(new FitViewport(800, 480));
+		stage = new Stage(game.viewport);
 		Gdx.input.setInputProcessor(stage);
 
 		table = new Table();
 		table.setFillParent(true);
-		//table.setDebug(true);
+
 		areYouReady = new Label("Welcome to Drop!!\n\nAre you ready to begin your journey?", skin);
 		startButton = new TextButton("I am!!", skin);
 		leaderboardButton = new TextButton("No...", skin);
@@ -82,7 +80,7 @@ public class MainMenuScreen implements Screen
 	@Override
 	public void resize (int width, int height)
 	{
-		stage.getViewport().update(width, height, true);
+		game.viewport.update(width, height, true);
 	}
 	@Override
 	public void show()
