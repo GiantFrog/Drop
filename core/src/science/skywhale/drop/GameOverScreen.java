@@ -12,20 +12,26 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.security.Signature;
+
+import static com.sun.deploy.util.Base64Wrapper.encodeToString;
 
 public class GameOverScreen implements Screen, InputProcessor
 {
 	private final Drop game;
-	private int score;
+	private int score, lowestScore;
 	private String name, toDraw;
 	private OrthographicCamera camera;
 	private String leftColString, rightColString;
 	private Socket server;
+	private BufferedReader in;
+	private Signature signature;
 
 	public GameOverScreen (final Drop game, int score)		//Game has just finished
 	{
 		this.game = game;
 		this.score = score;
+		lowestScore = -1;
 		Gdx.input.setInputProcessor(this);
 		camera = game.camera;
 		leftColString = "";
@@ -34,10 +40,20 @@ public class GameOverScreen implements Screen, InputProcessor
 
 		try
 		{
+			signature = Signature.getInstance("RSA");
+			signature.initSign(game.key);
+			
+			String toSign = name + ":#:" + score;
+			//out.println(name + ":" + score);
+			signature.update(toSign.getBytes());
+			String signed = encodeToString(signature.sign());
+			System.out.println(signed);
+			
 			server = new Socket("drop.skywhale.science", 9027);
-			requestName(); //will call addToLeaderboard()
+			in = new BufferedReader(new InputStreamReader(server.getInputStream()));
+			requestName(); //will call contactServer()
 		}
-		catch (IOException dang)
+		catch (Exception dang)
 		{
 			leftColString = "Unable to connect to the online leaderboard.\n" + dang;
 			rightColString = ":(";
@@ -57,8 +73,9 @@ public class GameOverScreen implements Screen, InputProcessor
 		try
 		{
 			server = new Socket("drop.skywhale.science", 9027);
+			in = new BufferedReader(new InputStreamReader(server.getInputStream()));
 			name = "Umiko";
-			addToLeaderboard();
+			contactServer();
 		}
 		catch (IOException dang)
 		{
@@ -115,37 +132,17 @@ public class GameOverScreen implements Screen, InputProcessor
 
 	}
 
+	//pulls the leaderboard from the server, then prompts the user for their name if we scored high enough.
 	private void requestName()
 	{
-		Gdx.input.getTextInput(new Input.TextInputListener()
-		{
-			@Override
-			public void input(String inName)
-			{
-				name = inName;
-				addToLeaderboard();
-			}
-			@Override
-			public void canceled()
-			{
-				name = "Anonymous";
-				addToLeaderboard();
-			}
-		}, "You did well!!!", "", "Add your name to the leaderboard!");
-	}
-	private void addToLeaderboard()
-	{
+		String input;
+		int added = 0;
 		try
 		{
-			PrintWriter out = new PrintWriter(server.getOutputStream(), true);
-			out.println(name + ":" + score);
-			BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
-			String input;
-			int added = 0;
 			while (true)
 			{
 				input = in.readLine();
-				if (input.equals("&"))		//& signifies end of leaderboard
+				if (input.equals("&"))        //& signifies end of leaderboard
 					break;
 				else
 				{
@@ -153,17 +150,91 @@ public class GameOverScreen implements Screen, InputProcessor
 					{
 						leftColString += input + "\n";
 						added++;
-					}
-					else
+					} else
+					{
 						rightColString += input + "\n";
+						added++;
+						//if this is the last entry, make note of th lowest score
+						if (added == 44)
+							lowestScore = Integer.parseInt(input.split(": ")[1]);
+					}
 				}
 			}
-			//out.print("k");
+		}
+		catch (IOException eek)
+		{
+			leftColString = "Unable to pull the leaderboard from the server.\n" + eek;
+		}
+		
+		if (score > lowestScore)
+		{
+			Gdx.input.getTextInput(new Input.TextInputListener()
+			{
+				@Override
+				public void input (String inName)
+				{
+					name = inName;
+					contactServer();
+				}
+				
+				@Override
+				public void canceled ()
+				{
+					name = "Anonymous";
+					contactServer();
+				}
+			}, "You did well!!!", "", "Add your name to the leaderboard!");
+		}
+	}
+	
+	//follow up with the server to either add our score or say we didn't make it on.
+	private void contactServer()
+	{
+		try
+		{
+			PrintWriter out = new PrintWriter(server.getOutputStream(), true);
+			
+			//we made it to the leaderboard! add our score and get the updated version
+			if (score > lowestScore)
+			{
+				String toSign = name + ":#:" + score;
+				//out.println(name + ":" + score);
+				signature.update(toSign.getBytes());
+				String signed = encodeToString(signature.sign());
+				System.out.println(signed);
+				
+				leftColString = "";
+				rightColString = "";
+				String input;
+				int added = 0;
+				while (true)
+				{
+					input = in.readLine();
+					if (input.equals("&"))		//& signifies end of leaderboard
+						break;
+					else
+					{
+						if (added < 22)
+						{
+							leftColString += input + "\n";
+							added++;
+						}
+						else
+						{
+							rightColString += input + "\n";
+							added++;
+						}
+					}
+				}
+			}
+			else
+				out.println("nope");
+			
 			out.close();
 			in.close();
 			server.close();
 		}
-		catch (IOException eek)
+		catch (Exception eek)
 		{
 			leftColString = "Unable to submit " + name + "'s score to the server.\n" + eek;
 		}
